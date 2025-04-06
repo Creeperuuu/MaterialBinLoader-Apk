@@ -25,6 +25,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;  // For List<File>
+import java.util.Arrays; // For Arrays.asList
 
 public class MainActivity extends AppCompatActivity {
 
