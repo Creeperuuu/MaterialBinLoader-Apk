@@ -107,36 +107,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void processNativeLibraries(@NotNull ApplicationInfo mcInfo, @NotNull Object pathList, @NotNull Handler handler, TextView listener) throws Exception {
-        // Get the nativeLibraryDirectories field
-        Field nativeLibDirsField = pathList.getClass().getDeclaredField("nativeLibraryDirectories");
-        nativeLibDirsField.setAccessible(true);
+    // Get the nativeLibraryDirectories field
+    Field nativeLibDirsField = pathList.getClass().getDeclaredField("nativeLibraryDirectories");
+    nativeLibDirsField.setAccessible(true);
     
-        // Get the current native library directories
-        Object nativeLibDirs = nativeLibDirsField.get(pathList);
-        List<File> updatedLibDirs;
+    // Get the current native library directories
+    Object nativeLibDirs = nativeLibDirsField.get(pathList);
+    List<File> updatedLibDirs;
 
     // Handle different types (array or List) based on Android version
-        if (nativeLibDirs instanceof File[]) {
-            File[] dirsArray = (File[]) nativeLibDirs;
-            updatedLibDirs = new ArrayList<>(Arrays.asList(dirsArray));
-        } else if (nativeLibDirs instanceof Collection<?>) {
-            updatedLibDirs = new ArrayList<>((Collection<?>) nativeLibDirs);
-        } else {
-            updatedLibDirs = new ArrayList<>();
-        }
+    if (nativeLibDirs instanceof File[]) {
+        File[] dirsArray = (File[]) nativeLibDirs;
+        updatedLibDirs = new ArrayList<>(Arrays.asList(dirsArray));
+    } else if (nativeLibDirs instanceof Collection<?>) {
+        updatedLibDirs = new ArrayList<>((Collection<File>) nativeLibDirs); // Fixed cast
+    } else {
+        updatedLibDirs = new ArrayList<>();
+    }
 
-        // Add the new native library directory
-        File newLibDir = new File(mcInfo.nativeLibraryDir);
-        if (!updatedLibDirs.contains(newLibDir)) {
-            updatedLibDirs.add(newLibDir);
-            // Update the field with the new list
-            if (nativeLibDirs instanceof File[]) {
-                nativeLibDirsField.set(pathList, updatedLibDirs.toArray(new File[0]));
-            } else {
-                nativeLibDirsField.set(pathList, updatedLibDirs);
-            }
-            handler.post(() -> listener.append("\n-> " + mcInfo.nativeLibraryDir + " added to native library directories"));
+    // Add the new native library directory
+    File newLibDir = new File(mcInfo.nativeLibraryDir);
+    if (!updatedLibDirs.contains(newLibDir)) {
+        updatedLibDirs.add(newLibDir);
+        // Update the field with the new list
+        if (nativeLibDirs instanceof File[]) {
+            nativeLibDirsField.set(pathList, updatedLibDirs.toArray(new File[0]));
         } else {
+            nativeLibDirsField.set(pathList, updatedLibDirs);
+        }
+        handler.post(() -> listener.append("\n-> " + mcInfo.nativeLibraryDir + " added to native library directories"));
+    } else {
         handler.post(() -> listener.append("\n-> " + mcInfo.nativeLibraryDir + " already in native library directories"));
     }
 }
