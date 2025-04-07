@@ -141,11 +141,10 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
-    private void launchMinecraft(@NotNull ApplicationInfo mcInfo) throws ClassNotFoundException {
-        Class<?> launcherClass = getClassLoader().loadClass("com.mojang.minecraftpe.Launcher");
-        Intent mcActivity = new Intent(this, launcherClass);
+    private void launchMinecraft(@NotNull ApplicationInfo mcInfo) {
+    Intent mcActivity = getPackageManager().getLaunchIntentForPackage(MC_PACKAGE_NAME);
+    if (mcActivity != null) {
         mcActivity.putExtra("MC_SRC", mcInfo.sourceDir);
-
         if (mcInfo.splitSourceDirs != null) {
             ArrayList<String> listSrcSplit = new ArrayList<>();
             Collections.addAll(listSrcSplit, mcInfo.splitSourceDirs);
@@ -153,8 +152,14 @@ public class MainActivity extends AppCompatActivity {
         }
         startActivity(mcActivity);
         finish();
+    } else {
+        // Handle the case where the launch intent is not found
+        Intent fallbackActivity = new Intent(this, Fallback.class);
+        fallbackActivity.putExtra("LOG_STR", "Failed to find launch intent for " + MC_PACKAGE_NAME);
+        startActivity(fallbackActivity);
+        finish();
     }
-
+}
     private void handleException(@NotNull Exception e, @NotNull Intent fallbackActivity) {
         String logMessage = e.getCause() != null ? e.getCause().toString() : e.toString();
         fallbackActivity.putExtra("LOG_STR", logMessage);
